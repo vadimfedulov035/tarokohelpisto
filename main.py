@@ -49,10 +49,13 @@ def get_descs(arkan_type, arkan_label):
     descs = []
     with open("taro_info.json", "r", encoding="utf-8") as f:
         info = json.load(f)
-    descs.append(info.get(f"{arkan_type}_{arkan_label}_h_desc", "..."))
-    for element_type in ELEMENT_TYPES:
-        descs.append(
-            info.get(f"{arkan_type}_{arkan_label}_{element_type}_desc", "..."))
+    if arkan_type != "e":
+        descs.append(info.get(f"{arkan_type}_{arkan_label}_h_desc", "..."))
+        for element_type in ELEMENT_TYPES:
+            descs.append(
+                info.get(f"{arkan_type}_{arkan_label}_{element_type}_desc", "..."))
+    else:
+        descs.append(info.get(f"{arkan_type}_{arkan_label}_desc", "..."))
     desc = "\n\n".join(descs)
     return desc
 
@@ -137,17 +140,15 @@ def callback_worker_2(call):
         case "e":
             msg = bot.send_photo(call.message.chat.id, file)
             PREV_MSG_IDS.append(msg.message_id)
-        case "j":
+            for i in range(2):
+                msg = bot.send_message(call.message.chat.id, text=text.split("|")[i], parse_mode="Markdown")
+                PREV_MSG_IDS.append(msg.message_id)
+        case "j" | "y":
             msgs = bot.send_media_group(call.message.chat.id, imgs)
             PREV_MSG_IDS += [msg.message_id for msg in msgs]
-        case "y":
-            msgs = bot.send_media_group(call.message.chat.id, imgs)
-            PREV_MSG_IDS += [msg.message_id for msg in msgs]
+            msg = bot.send_message(call.message.chat.id, text=text, parse_mode="Markdown")
+            PREV_MSG_IDS.append(msg.message_id)
     file.close()
-    msg = bot.send_message(call.message.chat.id,
-                           text=text,
-                           parse_mode="Markdown")
-    PREV_MSG_IDS.append(msg.message_id)
     PREV_ARKAN_TYPE = arkan_type
 
 
